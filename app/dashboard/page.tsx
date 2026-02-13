@@ -2,44 +2,55 @@
 
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
-import BookmarkForm from "@/components/BookmarkForm"
+import { useRouter } from "next/navigation"
 import BookmarkList from "@/components/BookmarkList"
+import BookmarkForm from "@/components/BookmarkForm"
+import toast, { Toaster } from "react-hot-toast"
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
+  const router = useRouter()
 
   useEffect(() => {
     const getUser = async () => {
       const { data } = await supabase.auth.getUser()
-      setUser(data.user)
+      if (!data.user) {
+        router.push("/")
+      } else {
+        setUser(data.user)
+      }
     }
+
     getUser()
   }, [])
 
-  const handleLogout = async () => {
+  const logout = async () => {
     await supabase.auth.signOut()
-    window.location.href = "/"
+    toast.success("Logged out successfully 👋")
+    router.push("/")
   }
 
   if (!user) return null
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-slate-100">
+
+      <Toaster position="top-right" />
 
       {/* Navbar */}
-      <nav className="bg-white border-b shadow-sm px-8 py-4 flex justify-between items-center">
-        <div className="text-2xl font-bold text-gray-800">
-          SmartBookmark
-        </div>
+      <nav className="bg-white shadow-sm px-8 py-4 flex justify-between items-center">
+        <h1 className="text-xl font-bold text-slate-800">
+          Smart<span className="text-indigo-600">Bookmark</span>
+        </h1>
 
-        <div className="flex items-center gap-6">
-          <span className="text-gray-600 text-sm">
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-500 hidden md:block">
             {user.email}
           </span>
 
           <button
-            onClick={handleLogout}
-            className="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition"
+            onClick={logout}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition"
           >
             Logout
           </button>
@@ -47,16 +58,22 @@ export default function Dashboard() {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-10">
-        <BookmarkForm user={user} />
+      <div className="max-w-4xl mx-auto p-6 space-y-8">
+
+        <div className="bg-white p-6 rounded-2xl shadow-sm">
+          <h2 className="text-lg font-semibold mb-4 text-slate-700">
+            Add Bookmark
+          </h2>
+          <BookmarkForm user={user} />
+        </div>
+
         <BookmarkList user={user} />
-      </main>
+      </div>
 
       {/* Footer */}
-      <footer className="bg-white border-t py-4 text-center text-sm text-gray-500">
-        © {new Date().getFullYear()} SmartBookmark. All rights reserved.
+      <footer className="text-center text-gray-500 text-sm py-6">
+        Built with ❤️ using Next.js + Supabase
       </footer>
-
     </div>
   )
 }
