@@ -1,36 +1,136 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+**SmartBookmark**
 
-## Getting Started
+A modern, real-time bookmark manager built with **Next.js (App Router)** and **Supabase**.
 
-First, run the development server:
+🔗 Live Demo: https://smart-bookmark-eight.vercel.app
 
-```bash
+📂 GitHub Repository: https://github.com/divya9500/smart-bookmark
+
+**✨Features**
+
+🔐 Google OAuth Authentication
+
+➕ Add Bookmarks
+
+✏️ Edit Bookmarks
+
+🗑️ Delete Bookmarks
+
+🔄 Real-time updates across tabs
+
+🔒 Row Level Security (Users see only their data)
+
+📱 Fully Responsive UI
+
+🌐 Automatic Favicon Preview
+
+🔔 Toast Notifications
+
+📊 Sorting (Newest / Oldest)
+
+🚀 Deployed on Vercel
+
+**🛠 Tech Stack**
+
+* Next.js (App Router)
+
+* Supabase (Auth + Database + Realtime)
+
+* PostgreSQL
+
+* Tailwind CSS
+
+* React Hot Toast
+
+* Vercel
+
+**🔐 Authentication & Security**
+
+* Google OAuth via Supabase
+
+* Secure session handling
+
+* Row Level Security (RLS) enabled
+
+* User-specific data isolation
+
+**⚙️ Environment Variables**
+
+Create .env.local:
+
+NEXT_PUBLIC_SUPABASE_URL=https://qqcbqtyihpzrttntoqwl.supabase.co
+
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_Ok_EiVflW0n65I3JxXP4xA_6G8dqCRN
+
+**🧪 Run Locally**
+
+git clone https://github.com/divya9500/smart-bookmark.git
+
+cd smart-bookmark
+
+npm install
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+http://localhost:3000
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**🚀 Deployment**
 
-## Learn More
+* Deployed on Vercel with environment variables configured.
 
-To learn more about Next.js, take a look at the following resources:
+* Google OAuth configured in:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+  -Google Cloud Console
+  
+  -Supabase Authentication → Google Provider
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**🧩 Challenges & Solutions**
+ 
+* OAuth 401 deleted_client
 
-## Deploy on Vercel
+  - Recreated OAuth client and updated credentials in Supabase.
+  
+* 500 unexpected_failure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+  - Fixed incorrect redirect URI configuration.
+  
+* Realtime not updating
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+ - Enabled Supabase Realtime replication and correct subscription setup.
+
+**📈 Future Improvements**
+
+* Bookmark categories
+
+* Search feature
+
+* Tag system
+
+* Dark mode
+
+* Drag & drop ordering
+
+**👨‍💻 Author**
+
+Divya Govindhan
+
+GitHub: https://github.com/divya9500
+
+**🎯 Project Highlights**
+
+* This project demonstrates:
+
+* Authentication integration
+
+* Real-time database updates
+
+* Secure data access with RLS
+
+* Production deployment
+
+* OAuth debugging & configuration
+
+* Clean responsive UI design
+  
