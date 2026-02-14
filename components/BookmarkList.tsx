@@ -186,7 +186,7 @@ export default function BookmarkList({ user }: any) {
 
               {/* Actions */}
               {editingId !== bookmark.id && (
-                <div className="opacity-0 group-hover:opacity-100 transition flex gap-4">
+<div className="flex gap-4 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition">
                   <button
                     onClick={() => {
                       setEditingId(bookmark.id)
