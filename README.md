@@ -1,136 +1,244 @@
-**SmartBookmark**
+**🚀 Smart Bookmark App**
 
-A modern, real-time bookmark manager built with **Next.js (App Router)** and **Supabase**.
+A modern, real-time bookmark manager built with Next.js, Supabase, and Tailwind CSS.
 
-🔗 Live Demo: https://smart-bookmark-eight.vercel.app
+This application allows users to securely store, manage, and sync bookmarks across multiple tabs instantly using Google OAuth authentication.
 
-📂 GitHub Repository: https://github.com/divya9500/smart-bookmark
+**🌐 Live Demo**
 
-**✨Features**
+**🔗 Production URL:**
+https://smart-bookmark-eight.vercel.app
 
-🔐 Google OAuth Authentication
+**📦 GitHub Repository:**
+https://github.com/divya9500/smart-bookmark
 
-➕ Add Bookmarks
+**✨ Features**
 
-✏️ Edit Bookmarks
+* 🔐 Google OAuth Authentication (No email/password)
 
-🗑️ Delete Bookmarks
+* ➕ Add bookmarks (Title + URL)
 
-🔄 Real-time updates across tabs
+* 🔄 Real-time updates across multiple tabs
 
-🔒 Row Level Security (Users see only their data)
+* 🔒 Row-Level Security (Users only see their own bookmarks)
 
-📱 Fully Responsive UI
+* 🗑 Delete bookmarks
 
-🌐 Automatic Favicon Preview
+* ✏️ Edit bookmarks
 
-🔔 Toast Notifications
+* 🔍 Sort bookmarks (Newest / Oldest)
 
-📊 Sorting (Newest / Oldest)
+* 🌐 Favicon auto-preview for links
 
-🚀 Deployed on Vercel
+* 🔔 Toast notifications (Success/Error feedback)
+
+* 📱 Fully responsive design
+
+* 🎨 Premium startup-style UI
+
+* 🚀 Deployed on Vercel
 
 **🛠 Tech Stack**
 
-* Next.js (App Router)
+**Frontend:** Next.js (App Router)
 
-* Supabase (Auth + Database + Realtime)
+**Backend:** Supabase (Auth, Database, Realtime)
 
-* PostgreSQL
+**Database:** PostgreSQL (via Supabase)
 
-* Tailwind CSS
+**Authentication:** Google OAuth 2.0
 
-* React Hot Toast
+**Styling:** Tailwind CSS
 
-* Vercel
+**Deployment:** Vercel
 
-**🔐 Authentication & Security**
+**🧱 Architecture Overview**
 
-* Google OAuth via Supabase
+* Supabase handles:
 
-* Secure session handling
+    * Authentication
+
+    * Database
+
+    * Real-time subscriptions
+
+* Next.js App Router handles:
+
+    * Client-side routing
+
+    * Protected dashboard page
+
+* Realtime updates use Supabase postgres_changes
+
+* Row-Level Security ensures data isolation per user
+
+**🔐 Security**
 
 * Row Level Security (RLS) enabled
 
-* User-specific data isolation
+* Policies:
 
-**⚙️ Environment Variables**
+    * Users can only SELECT their own bookmarks
 
-Create .env.local:
+    * Users can INSERT their own bookmarks
 
-NEXT_PUBLIC_SUPABASE_URL=https://qqcbqtyihpzrttntoqwl.supabase.co
+    * Users can UPDATE their own bookmarks
 
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_Ok_EiVflW0n65I3JxXP4xA_6G8dqCRN
+    * Users can DELETE their own bookmarks
 
-**🧪 Run Locally**
+* Secure Google OAuth flow
 
+**⚙️ Local Setup**
+**1️⃣ Clone the repository**
 git clone https://github.com/divya9500/smart-bookmark.git
-
 cd smart-bookmark
 
+**2️⃣ Install dependencies**
 npm install
 
+**3️⃣ Create .env.local**
+NEXT_PUBLIC_SUPABASE_URL=https://qqcbqtyihpzrttntoqwl.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_Ok_EiVflW0n65I3JxXP4xA_6G8dqCRN
+**4️⃣ Run development server**
 npm run dev
 
-Visit:
+
+Open:
 
 http://localhost:3000
 
-**🚀 Deployment**
+**🚀 Deployment (Vercel)**
 
-* Deployed on Vercel with environment variables configured.
+1. Push code to GitHub
 
-* Google OAuth configured in:
+2. Import repository in Vercel
 
-  -Google Cloud Console
-  
-  -Supabase Authentication → Google Provider
+3. Add environment variables:
 
-**🧩 Challenges & Solutions**
- 
-* OAuth 401 deleted_client
+    * NEXT_PUBLIC_SUPABASE_URL
 
-  - Recreated OAuth client and updated credentials in Supabase.
-  
-* 500 unexpected_failure
+    * NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  - Fixed incorrect redirect URI configuration.
-  
-* Realtime not updating
+4. Deploy
 
- - Enabled Supabase Realtime replication and correct subscription setup.
+**🧩 Problems Faced & Solutions**
+**🔴 1. Realtime WebSocket Errors**
 
-**📈 Future Improvements**
+**Problem:**
+WebSocket connection failing (CHANNEL_ERROR, TIMED_OUT)
 
-* Bookmark categories
+**Solution:**
 
-* Search feature
+* Enabled Realtime in Supabase Database Publications
 
-* Tag system
+* Verified correct Supabase URL and API key
 
-* Dark mode
+* Ensured proper cleanup of channels in useEffect
 
-* Drag & drop ordering
+**🔴 2. Google OAuth 401: deleted_client**
 
-**👨‍💻 Author**
+**Problem:**
+OAuth client was deleted in Google Cloud.
 
-Divya Govindhan
+**Solution:**
 
-GitHub: https://github.com/divya9500
+* Created new OAuth 2.0 Client ID
 
-**🎯 Project Highlights**
+* Updated Client ID & Secret in Supabase
 
-* This project demonstrates:
+* Configured correct Redirect URLs:
 
-* Authentication integration
+    * Supabase callback
 
-* Real-time database updates
+    * Localhost
 
-* Secure data access with RLS
+    * Production domain
 
-* Production deployment
+**🔴 3. OAuth 500 Unexpected Failure**
 
-* OAuth debugging & configuration
+**Problem:**
+Supabase callback returned 500 error.
 
-* Clean responsive UI design
-  
+**Solution:**
+
+* Verified Google Cloud Authorized Redirect URLs
+
+* Matched Supabase callback exactly:
+
+    https://project-id.supabase.co/auth/v1/callback
+
+
+* Ensured Site URL and Redirect URLs configured correctly
+
+**🔴 4. Session Redirect Loop**
+
+**Problem:**
+After login, app redirected back to login page.
+
+**Solution:**
+
+* Used supabase.auth.getSession() inside useEffect
+
+* Redirected only if session exists
+
+* Fixed client-side routing logic
+
+**🔴 5. Invalid URL Runtime Error**
+
+**Problem:**
+new URL(bookmark.url) crashed when URL missing protocol.
+
+**Solution:**
+
+* Added validation
+
+* Automatically prepended https:// when needed
+
+* Wrapped URL parsing in try/catch
+
+**📈 Improvements Beyond Requirements**
+
+The base task required:
+
+* Google Login
+
+* Add bookmark
+
+* Private bookmarks
+
+* Real-time updates
+
+* Delete bookmark
+
+* Vercel deployment
+
+Additional improvements implemented:
+
+* Edit bookmark functionality
+
+* Sorting options
+
+* Favicon preview
+
+* Toast notifications
+
+* Premium UI design
+
+* Responsive layout
+
+* Clean UX with empty state UI
+
+**🎯 What I Learned**
+* Deep understanding of Supabase Auth & RLS
+
+* OAuth configuration in Google Cloud
+
+* Real-time subscriptions in PostgreSQL
+
+* Secure frontend authentication handling
+
+* Production deployment & environment variable management
+
+**📄 License**
+
+This project is built for technical evaluation purposes.
