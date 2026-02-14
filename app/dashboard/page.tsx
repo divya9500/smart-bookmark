@@ -9,20 +9,53 @@ import toast, { Toaster } from "react-hot-toast"
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getUser()
-      if (!data.user) {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session) {
         router.push("/")
       } else {
-        setUser(data.user)
+        setUser(session.user)
       }
+
+      setLoading(false)
     }
 
-    getUser()
+    checkSession()
+
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        if (!session) {
+          router.push("/")
+        } else {
+          setUser(session.user)
+        }
+      }
+    )
+
+    return () => {
+      listener.subscription.unsubscribe()
+    }
   }, [])
+
+  useEffect(() => {
+  const channel = supabase
+    .channel("test-connection")
+    .subscribe((status) => {
+      console.log("Realtime status:", status)
+    })
+
+  return () => {
+    supabase.removeChannel(channel)
+  }
+}, [])
+
 
   const logout = async () => {
     await supabase.auth.signOut()
@@ -30,6 +63,7 @@ export default function Dashboard() {
     router.push("/")
   }
 
+  if (loading) return null
   if (!user) return null
 
   return (
@@ -60,12 +94,7 @@ export default function Dashboard() {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto p-6 space-y-8">
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm">
-          <h2 className="text-lg font-semibold mb-4 text-slate-700">
-            Add Bookmark
-          </h2>
-          <BookmarkForm user={user} />
-        </div>
+      
 
         <BookmarkList user={user} />
       </div>

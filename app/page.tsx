@@ -1,17 +1,37 @@
 "use client"
 
+import { useEffect } from "react"
 import { supabase } from "@/lib/supabaseClient"
+import { useRouter } from "next/navigation"
 
 export default function Home() {
+  const router = useRouter()
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (session) {
+        router.push("/dashboard")
+      }
+    }
+
+    checkSession()
+  }, [router])
+
   const signIn = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      },
     })
   }
 
   return (
     <div className="min-h-screen bg-slate-950 text-white flex flex-col">
-      
       {/* Navbar */}
       <nav className="flex justify-between items-center px-8 py-6">
         <h1 className="text-2xl font-bold tracking-wide">
@@ -47,7 +67,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="text-center text-gray-500 text-sm py-6 border-t border-slate-800">
-        © {new Date().getFullYear()} SmartBookmark. Built with Next.js & Supabase.
+        © {new Date().getFullYear()} SmartBookmark.
       </footer>
     </div>
   )

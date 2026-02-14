@@ -1,13 +1,13 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabaseClient"
 import toast from "react-hot-toast"
+import BookmarkForm from "./BookmarkForm"
 
 export default function BookmarkList({ user }: any) {
   const [bookmarks, setBookmarks] = useState<any[]>([])
   const [sortOrder, setSortOrder] = useState("desc")
-  const channelRef = useRef<any>(null)
 
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editTitle, setEditTitle] = useState("")
@@ -15,6 +15,8 @@ export default function BookmarkList({ user }: any) {
 
   // 🔹 Fetch Bookmarks
   const fetchBookmarks = async () => {
+    if (!user) return
+
     const { data, error } = await supabase
       .from("bookmarks")
       .select("*")
@@ -40,11 +42,15 @@ export default function BookmarkList({ user }: any) {
     } else {
       toast.success("Bookmark updated ✏️")
       setEditingId(null)
+      fetchBookmarks()
     }
   }
 
-  // 🔹 Delete
+  // 🔹 Delete (Instant UI)
   const deleteBookmark = async (id: string) => {
+    const previous = bookmarks
+    setBookmarks((prev) => prev.filter((b) => b.id !== id))
+
     const { error } = await supabase
       .from("bookmarks")
       .delete()
@@ -52,12 +58,13 @@ export default function BookmarkList({ user }: any) {
 
     if (error) {
       toast.error("Failed to delete ❌")
+      setBookmarks(previous)
     } else {
       toast.success("Bookmark deleted 🗑️")
     }
   }
 
-  // 🔹 Realtime
+  // 🔹 Realtime (Cross-tab Sync)
   useEffect(() => {
     if (!user) return
 
@@ -71,6 +78,7 @@ export default function BookmarkList({ user }: any) {
           event: "*",
           schema: "public",
           table: "bookmarks",
+          filter: `user_id=eq.${user.id}`,
         },
         () => {
           fetchBookmarks()
@@ -78,100 +86,77 @@ export default function BookmarkList({ user }: any) {
       )
       .subscribe()
 
-    channelRef.current = channel
-
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current)
-      }
+      supabase.removeChannel(channel)
     }
   }, [user, sortOrder])
 
-  // 🔹 Empty State
-  if (bookmarks.length === 0) {
-    return (
-      <div className="bg-white p-12 rounded-2xl shadow-sm text-center border border-gray-100">
-        <div className="text-6xl mb-4">📌</div>
-        <h3 className="text-xl font-semibold text-gray-800">
-          No bookmarks yet
-        </h3>
-        <p className="text-gray-500 mt-2">
-          Start building your collection by adding your first bookmark.
-        </p>
-      </div>
-    )
-  }
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
 
-      {/* Sorting */}
+      {/* 🔹 Add Form */}
+      <BookmarkForm
+        user={user}
+        setBookmarks={setBookmarks}
+        sortOrder={sortOrder}
+      />
+
+      {/* 🔹 Sorting */}
       <div className="flex justify-end">
         <select
           value={sortOrder}
           onChange={(e) => setSortOrder(e.target.value)}
-          className="px-4 py-2 rounded-xl border border-gray-200 bg-white shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="px-4 py-2 rounded-xl bg-white border border-gray-200 shadow-sm text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
         >
           <option value="desc">Newest First</option>
           <option value="asc">Oldest First</option>
         </select>
       </div>
 
-      {/* Bookmark Cards */}
-      <div className="grid gap-5 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-        {bookmarks.map((bookmark) => {
-          let domain = ""
+      {/* 🔹 Bookmark Grid */}
+      <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        {bookmarks.map((bookmark) => (
+          <div
+            key={bookmark.id}
+            className="group bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+          >
+            <div className="flex justify-between items-start">
 
-          try {
-            const validUrl = bookmark.url.startsWith("http")
-              ? bookmark.url
-              : `https://${bookmark.url}`
+              {/* Left Content */}
+              <div className="flex gap-4">
 
-            domain = new URL(validUrl).hostname
-          } catch {
-            domain = ""
-          }
-
-          return (
-            <div
-              key={bookmark.id}
-              className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
-            >
-              {/* Header */}
-              <div className="flex items-start gap-3">
-
-                {domain && (
+                {/* Favicon */}
+                <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
                   <img
-                    src={`https://www.google.com/s2/favicons?domain=${domain}&sz=64`}
+                    src={`https://www.google.com/s2/favicons?domain=${bookmark.url}&sz=64`}
                     alt="favicon"
-                    className="w-8 h-8"
+                    className="w-6 h-6"
                   />
-                )}
+                </div>
 
-                <div className="flex-1">
-
+                <div>
                   {editingId === bookmark.id ? (
                     <div className="space-y-3">
                       <input
                         value={editTitle}
                         onChange={(e) => setEditTitle(e.target.value)}
-                        className="w-full border border-gray-200 px-3 py-2 rounded-lg text-sm"
+                        className="w-full border px-3 py-2 rounded-lg text-sm"
                       />
                       <input
                         value={editUrl}
                         onChange={(e) => setEditUrl(e.target.value)}
-                        className="w-full border border-gray-200 px-3 py-2 rounded-lg text-sm"
+                        className="w-full border px-3 py-2 rounded-lg text-sm"
                       />
                       <div className="flex gap-3">
                         <button
                           onClick={() => updateBookmark(bookmark.id)}
-                          className="bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-indigo-700 transition"
+                          className="text-indigo-600 text-sm"
                         >
                           Save
                         </button>
                         <button
                           onClick={() => setEditingId(null)}
-                          className="text-gray-500 text-sm hover:text-gray-700"
+                          className="text-gray-500 text-sm"
                         >
                           Cancel
                         </button>
@@ -179,7 +164,7 @@ export default function BookmarkList({ user }: any) {
                     </div>
                   ) : (
                     <>
-                      <h3 className="font-semibold text-gray-900 text-base">
+                      <h3 className="text-lg font-semibold text-gray-900">
                         {bookmark.title}
                       </h3>
 
@@ -190,7 +175,7 @@ export default function BookmarkList({ user }: any) {
                             : `https://${bookmark.url}`
                         }
                         target="_blank"
-                        className="text-gray-500 text-sm hover:text-indigo-600 break-all"
+                        className="text-sm text-gray-500 hover:text-indigo-600 transition"
                       >
                         {bookmark.url}
                       </a>
@@ -201,33 +186,29 @@ export default function BookmarkList({ user }: any) {
 
               {/* Actions */}
               {editingId !== bookmark.id && (
-                <div className="flex justify-end gap-4 mt-5">
+                <div className="opacity-0 group-hover:opacity-100 transition flex gap-4">
                   <button
                     onClick={() => {
                       setEditingId(bookmark.id)
                       setEditTitle(bookmark.title)
                       setEditUrl(bookmark.url)
                     }}
-                    className="text-indigo-600 text-sm hover:underline"
+                    className="text-indigo-600 text-sm"
                   >
                     Edit
                   </button>
 
                   <button
-                    onClick={() => {
-                      if (confirm("Delete this bookmark?")) {
-                        deleteBookmark(bookmark.id)
-                      }
-                    }}
-                    className="text-red-500 text-sm hover:underline"
+                    onClick={() => deleteBookmark(bookmark.id)}
+                    className="text-red-500 text-sm"
                   >
                     Delete
                   </button>
                 </div>
               )}
             </div>
-          )
-        })}
+          </div>
+        ))}
       </div>
     </div>
   )
